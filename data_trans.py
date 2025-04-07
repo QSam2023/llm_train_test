@@ -64,5 +64,6 @@ data_list = data_list[:sample_num]
 output_data = [{"conversation": conv} for conv in data_list]
 
 with open("data/demo_data.json", "w") as writer:
-    json.dump(output_data, writer, ensure_ascii=False)
+    jsonlines.Writer(writer).write_all(output_data)
+    #json.dump(output_data, writer, ensure_ascii=False)
 
