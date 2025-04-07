@@ -1,5 +1,6 @@
 import os
 import random
+import json
 import jsonlines
 
 sample_num = 100
@@ -20,7 +21,6 @@ def get_system_prompt():
       3、同一个问题，文本中有不同的答案，需要综合起来回答
       4、问题答案在文档中是分点/条、系列措施时列举时，需要全部列出不遗漏;
       5、文本中数值与两边的文字可能有空格或换行符，与没有这两类的符号的含义是相同的。例如 ""持有8926万股"" 与 ""持有 8926 万股"" 、""持有 8926万股""、""持有 8926 万股""含义是相同的
-
     """
     return prompt
 
@@ -35,13 +35,15 @@ def trans_chat_template(d):
     answer = d.get("answer", "")
     answer = d.get("ground_truth", "") if not answer else answer
 
+    prompt = get_system_prompt()
+
     return [
         {
-            "from": "user",
-            "content": get_system_prompt() + f"文档内容：{ref}\n问题：{query}",
+            "role": "user",
+            "content": f"{prompt}\n\n文档内容：{ref}\n问题：{query}",
         },
         {
-            "from": "assistant",
+            "role": "assistant",
             "content": answer,
         },
     ]
@@ -61,9 +63,6 @@ random.shuffle(data_list)
 
 data_list = data_list[:sample_num]
 
-with open("data/demo_data.jsonl", "w") as writer:
-    jsonlines.Writer(writer).write_all(data_list)
-
-
-
+with open("data/demo_data.json", "w") as writer:
+    json.dump(data_list, writer, ensure_ascii=False)
 

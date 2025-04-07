@@ -4,9 +4,8 @@ from trl import SFTTrainer, SFTConfig
 from datasets import load_dataset
 max_seq_length = 2048 # Supports RoPE Scaling interally, so choose any!
 # Get LAION dataset
-url = "./data/data_demo.jsonl"
-dataset = load_dataset("json", data_files={"train":url}, split = "train")
-
+url = "./data/demo_data.jsonl"
+dataset = load_dataset("json", data_files = {"train" : url}, split = "train")
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name = "Qwen/Qwen2.5-3B-Instruct",
@@ -28,3 +27,5 @@ def formatting_prompts_func(examples):
     return { "text" : texts, }
 
 
+dataset = dataset.map(formatting_prompts_func, batched = True,)
+print(dataset[0])
