@@ -8,7 +8,7 @@ sample_num = 100
 file_dir = "data"
 fn_list = [
     "human_label_result_1208.jsonl",
-    "merged_eval_results_v2.jsonl",
+    #"merged_eval_results_v2.jsonl",
 ]
 
 def get_system_prompt():
@@ -54,7 +54,6 @@ data_list = []
 for fn in fn_list:
     with jsonlines.open(os.path.join(file_dir, fn)) as reader:
         for line in reader:
-
             data_list.append(trans_chat_template(line))
 
 print(len(data_list))
@@ -62,7 +61,8 @@ print(len(data_list))
 random.shuffle(data_list)
 
 data_list = data_list[:sample_num]
+output_data = [{"conversation": conv} for conv in data_list]
 
 with open("data/demo_data.json", "w") as writer:
-    json.dump(data_list, writer, ensure_ascii=False)
+    json.dump(output_data, writer, ensure_ascii=False)
 
