@@ -1,13 +1,20 @@
+import os
+
 import torch
 from unsloth import FastLanguageModel
 from trl import SFTTrainer, SFTConfig
 from datasets import load_dataset
 from unsloth.chat_templates import get_chat_template
 
+os.environ["WANDB_PROJECT"] = "my-awesome-project"
+os.environ["WANDB_LOG_MODEL"] = "checkpoint"
+
 max_seq_length = 2048 # Supports RoPE Scaling interally, so choose any!
 # Get LAION dataset
 url = "./data/demo_data.json"
-dataset = load_dataset("json", data_file=url, split="train")
+dataset = load_dataset("json", data_files=url, split="train")
+
+
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name = "Qwen/Qwen2.5-3B-Instruct",
@@ -64,6 +71,10 @@ trainer = SFTTrainer(
         output_dir = "outputs",
         optim = "adamw_8bit",
         seed = 3407,
+        report_to="wandb",
+        logging_steps=10,
+        save_steps=100,
+        run_name="qwen_lora_training"
     ),
 )
 trainer.train()
