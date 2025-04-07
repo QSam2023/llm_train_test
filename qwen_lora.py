@@ -8,6 +8,8 @@ from unsloth.chat_templates import get_chat_template
 
 os.environ["WANDB_PROJECT"] = "my-awesome-project"
 os.environ["WANDB_LOG_MODEL"] = "checkpoint"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 max_seq_length = 2048 # Supports RoPE Scaling interally, so choose any!
 # Get LAION dataset
@@ -67,7 +69,6 @@ trainer = SFTTrainer(
         gradient_accumulation_steps = 4,
         warmup_steps = 10,
         max_steps = 60,
-        logging_steps = 1,
         output_dir = "outputs",
         optim = "adamw_8bit",
         seed = 3407,
