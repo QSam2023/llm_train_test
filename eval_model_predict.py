@@ -71,7 +71,7 @@ for i in tqdm(range(0, num_data, batch_size)):
         valid_token_idx = (batch_input[idx] != tokenizer.pad_token_id).nonzero()
         input_lengths.append(valid_token_idx.shape[0])
 
-    for idx, d in enumerate(batch):
+    for idx, d in enumerate(batch_data):
         offset = input_lengths[idx]
         answer_ids = output_ids[idx][offset:]
 
