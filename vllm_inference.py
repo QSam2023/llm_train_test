@@ -26,7 +26,7 @@ sampling_params = SamplingParams(
     max_tokens=1024,     # 最多生成多少个token
     temperature=0.0,     # 可根据需求调整
     top_p=0.9,
-    top_k=0,
+    top_k=-1,
     # repetition_penalty=1.0, 等等
 )
 
@@ -61,7 +61,7 @@ for i in tqdm(range(0, num_data, batch_size)):
     # 写出结果
     for d, output in zip(batch_data, outputs):
         # 每个output.generations 里可能包含多个采样解；默认是1个
-        answer_text = output.generations[0].text
+        answer_text = output.outputs[0].text
         result = {
             "question": d.get("query", ""),
             "answer": answer_text.strip()
