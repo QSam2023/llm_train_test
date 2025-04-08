@@ -23,7 +23,16 @@ output_fn = "eval_result.jsonl"
 output_f = open(output_fn, "w")
 
 with jsonlines.open(eval_fn) as reader:
-    for d in tqdm(reader):
+    data = list(reader)
+
+batch_size = 32
+num_data = len(data)
+
+for i in tqdm(range(0, num_data, batch_size)):
+    batch_data = data[i:i+batch_size]
+
+    messages = []
+    for d in batch_data:
         query = d.get("query", "")
         ref = d.get("ref", "")
         ground_truth = d.get("answer", "")
@@ -37,27 +46,38 @@ with jsonlines.open(eval_fn) as reader:
             }
         ]
 
-        input_ids = tokenizer.apply_chat_template(
-            message,
-            add_generation_prompt = True,
-            return_tensors = "pt",
-        ).to("cuda")
+    batch_input = tokenizer.apply_chat_template(
+        message,
+        add_generation_prompt = True,
+        return_tensors = "pt",
+        padding = True,
+        truncation = True,
+    ).to("cuda")
 
         # 添加 attention_mask
-        attention_mask = (input_ids != tokenizer.pad_token_id).long()
+    attention_mask = (batch_input != tokenizer.pad_token_id).long()
 
-        output_ids = model.generate(
-            input_ids,
-            max_new_tokens = 1024,
-            attention_mask=attention_mask,  # 关键修复点
-            do_sample = False,
-            top_p = 0.9,
-            top_k = 0
-        )
+    output_ids = model.generate(
+        batch_input,
+        max_new_tokens = 1024,
+        attention_mask=attention_mask,  # 关键修复点
+        do_sample = False,
+        top_p = 0.9,
+        top_k = 0
+    )
 
-        answer = tokenizer.decode(output_ids[0][input_ids.shape[-1]:], skip_special_tokens=True)
+    input_lengths = []
+    for idx in range(batch_size.shape[0]):
+        valid_token_idx = (batch_input[idx] != tokenizer.pad_token_id).nonzero()
+        input_lengths.append(valid_token_idx.shape[0])
+
+    for idx, d in enumerate(batch):
+        offset = input_lengths[idx]
+        answer_ids = output_ids[idx][offset:]
+
+        answer = tokenizer.decode(answer_ids, skip_special_tokens=True)
         res = {
-            "question": query,
+            "question": d.get("query", ""),
             "answer": answer,
         }
         output_f.write(json.dumps(res, ensure_ascii=False) + "\n")
