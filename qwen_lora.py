@@ -11,7 +11,7 @@ os.environ["WANDB_LOG_MODEL"] = "checkpoint"
 #os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
-max_seq_length = 2048 # Supports RoPE Scaling interally, so choose any!
+max_seq_length = 8196 # Supports RoPE Scaling interally, so choose any!
 # Get LAION dataset
 url = "./data/demo_data.json"
 dataset = load_dataset("json", data_files=url, split="train")
@@ -20,8 +20,8 @@ dataset = load_dataset("json", data_files=url, split="train")
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name = "Qwen/Qwen2.5-3B-Instruct",
-    max_seq_length = 2048, # Choose any for long context!
-    load_in_4bit = True,  # 4 bit quantization to reduce memory
+    max_seq_length = max_seq_length, # Choose any for long context!
+    load_in_4bit = False,  # 4 bit quantization to reduce memory
     load_in_8bit = False, # [NEW!] A bit more accurate, uses 2x memory
     full_finetuning = False, # [NEW!] We have full finetuning now!
     # token = "hf_...", # use one if using gated models
@@ -65,10 +65,10 @@ trainer = SFTTrainer(
     args = SFTConfig(
         dataset_text_field = "text",
         max_seq_length = max_seq_length,
-        per_device_train_batch_size = 2,
-        gradient_accumulation_steps = 4,
+        per_device_train_batch_size = 16,
+        gradient_accumulation_steps = 1,
         warmup_steps = 10,
-        max_steps = 60,
+        max_steps = 100,
         output_dir = "outputs",
         optim = "adamw_8bit",
         seed = 3407,
@@ -79,4 +79,6 @@ trainer = SFTTrainer(
     ),
 )
 trainer.train()
+
+model.save_pretrained_merged("outputs/vllm_model", tokenizer, save_method = "merged_16bit",)
 
