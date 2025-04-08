@@ -1,11 +1,11 @@
+from unsloth import FastLanguageModel
 import json
 import jsonlines
-import tqdm
+from tqdm import tqdm
 from utils import get_system_prompt
 
 import torch
 from transformers import TextStreamer
-from unsloth import FastLanguageModel
 
 model_name = "outputs/checkpoint-60"
 
@@ -43,10 +43,13 @@ with jsonlines.open(eval_fn) as reader:
             return_tensors = "pt",
         ).to("cuda")
 
+        # 添加 attention_mask
+        attention_mask = (input_ids != tokenizer.pad_token_id).long()
 
         output_ids = model.generate(
             input_ids,
             max_new_tokens = 1024,
+            attention_mask=attention_mask,  # 关键修复点
             do_sample = False,
             top_p = 0.9,
             top_k = 0
