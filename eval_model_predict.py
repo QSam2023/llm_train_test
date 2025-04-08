@@ -1,5 +1,6 @@
 import json
 import jsonlines
+import tqdm
 from utils import get_system_prompt
 
 import torch
@@ -22,14 +23,14 @@ output_fn = "eval_result.jsonl"
 output_f = open(output_fn, "w")
 
 with jsonlines.open(eval_fn) as reader:
-    for d hin reader:
+    for d in tqdm(reader):
         query = d.get("query", "")
         ref = d.get("ref", "")
         ground_truth = d.get("answer", "")
 
         prompt = get_system_prompt()
 
-        conv = [
+        message = [
             {
                 "role": "user",
                 "content": f"{prompt}\n\n文档内容：{ref}\n问题：{query}",
