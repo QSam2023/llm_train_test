@@ -7,13 +7,14 @@ from datasets import load_dataset
 from unsloth.chat_templates import get_chat_template
 
 os.environ["WANDB_PROJECT"] = "my-awesome-project"
-os.environ["WANDB_LOG_MODEL"] = "checkpoint"
+os.environ["WANDB_LOG_MODEL"] = ""
 #os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 max_seq_length = 8196 # Supports RoPE Scaling interally, so choose any!
 # Get LAION dataset
-url = "./data/demo_data.json"
+url = "./data/sft_16k_data.json"
+#url = "./data/demo_data.json"
 dataset = load_dataset("json", data_files=url, split="train")
 
 
@@ -65,20 +66,19 @@ trainer = SFTTrainer(
     args = SFTConfig(
         dataset_text_field = "text",
         max_seq_length = max_seq_length,
-        per_device_train_batch_size = 16,
-        gradient_accumulation_steps = 1,
-        warmup_steps = 10,
-        max_steps = 100,
+        per_device_train_batch_size = 32,
+        gradient_accumulation_steps = 2,
+        warmup_steps = 50,
+        max_steps = 500,
         output_dir = "outputs",
         optim = "adamw_8bit",
         seed = 3407,
         report_to="wandb",
-        logging_steps=10,
-        save_steps=100,
+        logging_steps=50,
+        save_steps=250,
         run_name="qwen_lora_training"
     ),
 )
 trainer.train()
 
-model.save_pretrained_merged("outputs/vllm_model", tokenizer, save_method = "merged_16bit",)
-
+model.save_pretrained_merged("outputs/vllm_model_3b_16k", tokenizer, save_method = "merged_16bit",)

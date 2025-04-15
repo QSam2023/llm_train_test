@@ -18,7 +18,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 max_seq_length = 8196 # Supports RoPE Scaling interally, so choose any!
-base_moodel = "Qwen/Qwen2.5-1.5B"
+base_moodel = "/data/local_model/Qwen2.5-1.5B"
 # Get LAION dataset
 url = "data/corpus_data.json"
 dataset = load_dataset("json", data_files=url, split="train")
@@ -41,6 +41,11 @@ EOS_TOKEN = tokenizer.eos_token
 def formatting_prompts_func(examples):
     return {"text" : [example + EOS_TOKEN for example in examples["text"]],}
 
+dataset = dataset.map(formatting_prompts_func, batched = True,)
+print(dataset)
+for row in dataset[:5]["text"]:
+    print("=========================")
+    print(row)
 
 
 trainer = UnslothTrainer(

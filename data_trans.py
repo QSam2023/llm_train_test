@@ -3,12 +3,14 @@ import random
 import json
 import jsonlines
 
-sample_num = 100
+sample_num = 16000
 
 file_dir = "data"
 fn_list = [
-    "human_label_result_1208.jsonl",
+    #"human_label_result_1208.jsonl",
     #"merged_eval_results_v2.jsonl",
+    "answer.jsonl",
+    "answer_w_recall.jsonl",
 ]
 
 def get_system_prompt():
@@ -31,6 +33,8 @@ def trans_chat_template(d):
 
     ref = d.get("ref")
     ref = d.get("paragraphs", "") if not ref else ref
+    ref = d.get("reference_content", "") if not ref else ref
+    ref = d.get("result", "") if not ref else ref
 
     answer = d.get("answer", "")
     answer = d.get("ground_truth", "") if not answer else answer
@@ -63,7 +67,7 @@ random.shuffle(data_list)
 data_list = data_list[:sample_num]
 output_data = [{"conversation": conv} for conv in data_list]
 
-with open("data/demo_data.json", "w") as writer:
+with open("data/sft_16k_data.json", "w") as writer:
     jsonlines.Writer(writer).write_all(output_data)
     #json.dump(output_data, writer, ensure_ascii=False)
 
