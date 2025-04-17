@@ -39,6 +39,9 @@ def trans_chat_template(d):
     answer = d.get("answer", "")
     answer = d.get("ground_truth", "") if not answer else answer
 
+    if not query or not ref or not answer:
+        return []
+
     prompt = get_system_prompt()
 
     return [
@@ -65,7 +68,7 @@ print(len(data_list))
 random.shuffle(data_list)
 
 data_list = data_list[:sample_num]
-output_data = [{"conversation": conv} for conv in data_list]
+output_data = [{"conversation": conv} for conv in data_list if conv]
 
 with open("data/sft_16k_data.json", "w") as writer:
     jsonlines.Writer(writer).write_all(output_data)

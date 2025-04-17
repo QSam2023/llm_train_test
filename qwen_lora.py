@@ -66,16 +66,16 @@ trainer = SFTTrainer(
     args = SFTConfig(
         dataset_text_field = "text",
         max_seq_length = max_seq_length,
-        per_device_train_batch_size = 32,
-        gradient_accumulation_steps = 2,
-        warmup_steps = 50,
-        max_steps = 500,
+        per_device_train_batch_size = 64,
+        gradient_accumulation_steps = 1,
+        warmup_steps = 20,
+        max_steps = 200,
         output_dir = "outputs",
         optim = "adamw_8bit",
         seed = 3407,
         report_to="wandb",
-        logging_steps=50,
-        save_steps=250,
+        logging_steps=5,
+        save_steps=50,
         run_name="qwen_lora_training"
     ),
 )

@@ -13,12 +13,12 @@ from unsloth import UnslothTrainer, UnslothTrainingArguments
 
 
 os.environ["WANDB_PROJECT"] = "my-awesome-project"
-os.environ["WANDB_LOG_MODEL"] = "checkpoint"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+#os.environ["WANDB_LOG_MODEL"] = "checkpoint"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 max_seq_length = 8196 # Supports RoPE Scaling interally, so choose any!
-base_moodel = "/data/local_model/Qwen2.5-1.5B"
+base_moodel = "Qwen/Qwen2.5-1.5B"
 # Get LAION dataset
 url = "data/corpus_data.json"
 dataset = load_dataset("json", data_files=url, split="train")
@@ -42,10 +42,6 @@ def formatting_prompts_func(examples):
     return {"text" : [example + EOS_TOKEN for example in examples["text"]],}
 
 dataset = dataset.map(formatting_prompts_func, batched = True,)
-print(dataset)
-for row in dataset[:5]["text"]:
-    print("=========================")
-    print(row)
 
 
 trainer = UnslothTrainer(
@@ -57,8 +53,8 @@ trainer = UnslothTrainer(
     dataset_num_proc = 8,
 
     args = UnslothTrainingArguments(
-        per_device_train_batch_size = 2,
-        gradient_accumulation_steps = 8,
+        per_device_train_batch_size = 8,
+        gradient_accumulation_steps = 1,
 
         warmup_ratio = 0.1,
         num_train_epochs = 1,
@@ -69,15 +65,16 @@ trainer = UnslothTrainer(
         fp16 = not is_bfloat16_supported(),
         bf16 = is_bfloat16_supported(),
         logging_steps = 1,
+        save_steps=1000
         optim = "adamw_8bit",
         weight_decay = 0.00,
         lr_scheduler_type = "cosine",
         seed = 3407,
         output_dir = "outputs",
-        report_to = "none", # Use this for WandB etc
+        output_dir = "cpt_output/e1",
+        report_to = "wandb", # Use this for WandB etc
     ),
 )
 
 trainer.train()
 
-model.save_pretrained_merged("outputs/model_cpt", tokenizer)
